@@ -21,6 +21,7 @@
 import ConfigParser
 import argparse
 import cmd
+import re
 from email.utils import parseaddr
 
 class DS_base(cmd.Cmd,object):
@@ -29,7 +30,7 @@ class DS_base(cmd.Cmd,object):
 	__version__ = '0.0.1'
 
 	def __init__(self):
-		#super(DS_base,self).__init__()
+		super(DS_base,self).__init__()
 		cmd.Cmd.__init__(self)
 		self.doc_header="Available commands (type ?<topic>):"
 		self.prompt="> "
@@ -125,10 +126,6 @@ class DS_config(DS_base):
 		self.lastname  = initialconf.lastname
 		self.email     = initialconf.email
 
-		print " Firstname..: %s " % self.firstname
-		print " Lastname...: %s " % self.lastname
-		print " Email......: %s " % self.email
-
 	def do_quit(self,args):
 		"Exit immideately without saving."
 		return True
@@ -167,15 +164,14 @@ class InitialConfig():
 			if (not answer):
 				print("Value required")
 			elif (tpe=="email"):
-				addr = parseaddr(answer)[1]
-				if (addr):
-					answer=addr
-				else:
+				if not self._check_email(answer):
 					print("Illegal Email address:" + answer)
 					answer=None
 		return answer
 
 
+	def _check_email(self,email_str):
+		return re.match("^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$", email_str)
 
 
 

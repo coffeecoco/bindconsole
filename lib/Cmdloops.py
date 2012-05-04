@@ -121,7 +121,7 @@ class InitialConfig():
 
 	def __init__(self,config):
 		if (not config.type("ConfigParser")):
-
+			raise TypeError("ConfigParser expected as argument.")
 		firstname = None
 		lastname = None
 		email = None

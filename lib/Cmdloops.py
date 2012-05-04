@@ -111,19 +111,37 @@ class DS_config(DS_base):
 
 	def __init__(self):
 		super(DS_config,self).__init__()
-		self.intro="You may change your settings here. \nPlease use save to make changes permanent."
+		self.intro="You may change your settings here. \nPlease use save to make changes permanent,\nuse show to list settings."
 		self.prompt="config> "
 		self.firstname=None
 		self.lastname=None
 		self.email=None
 
 	def setBaseConfig(self,initialconf):
+
 		if not isinstance(initialconf, InitialConfig):
 			raise TypeError("InitialConfig expected as argument, got "+str(initialconf.__class__))
 		self.firstname = initialconf.firstname
 		self.lastname  = initialconf.lastname
 		self.email     = initialconf.email
 
+		print " Firstname..: %s " % self.firstname
+		print " Lastname...: %s " % self.lastname
+		print " Email......: %s " % self.email
+
+	def do_quit(self,args):
+		"Exit immideately without saving."
+		return True
+
+	def do_show(self,args):
+		"view settigs."
+
+		print "Basic settings:"
+		print "---------------\n"
+		print " Firstname..: %s " % self.firstname
+		print " Lastname...: %s " % self.lastname
+		print " Email......: %s " % self.email
+		print "."
 
 
 class InitialConfig():
@@ -149,12 +167,13 @@ class InitialConfig():
 			if (not answer):
 				print("Value required")
 			elif (tpe=="email"):
-					addr = parseaddr(answer)[1]
-					if (addr):
-						answer=addr
-					else:
-						print("Illegal Email address:" + answer)
-						answer=None
+				addr = parseaddr(answer)[1]
+				if (addr):
+					answer=addr
+				else:
+					print("Illegal Email address:" + answer)
+					answer=None
+		return answer
 
 
 

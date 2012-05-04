@@ -112,16 +112,18 @@ class DS_config(DS_base):
 		lastname=None
 		email=None
 
-	def setBaseConfig(self,first,last,mail):
-		self.firstname=first
-		self.lastname=last
-		self.email=mail
+	def setBaseConfig(self,initialconf):
+		if not isinstance(initialconf, InitialConfig):
+			raise TypeError("InitialConfig expected as argument, got "+str(initialconf.__class__))
+		self.firstname = initialconf.firstname
+		self.lastname  = initialconf.lastname
+		self.email     = initialconf.email
+
+
 
 class InitialConfig():
 
-	def __init__(self,config):
-		if not isinstance(config, ConfigParser.RawConfigParser):
-			raise TypeError("ConfigParser expected as argument.")
+	def __init__(self):
 		firstname = None
 		lastname = None
 		email = None

@@ -66,10 +66,11 @@ def main():
 			print "about to create a config in %s\n" %configfile
 			#TODO: create config-template/ask user questions.
 			#      maybe special mode 'unconfigured>' ;o)
-			u = Cmdloops.InitialConfig(config)
+			u = Cmdloops.InitialConfig()
 			u.wizard()
 			c = Cmdloops.DS_config()
-			c.setBaseConfig(u.firstname, u.lastname, u.email)
+			c.setBaseConfig(u)
+			c.cmdloop()
 			pass
 
 		if ((errno==13)&(not args.readonly)):

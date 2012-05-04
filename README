@@ -1,0 +1,8 @@
+This console will allow a user that has this script as loginshell or is
+allowed to execute it via sudo as unprivileged user (see documentation!) to edit parts
+of the configuration of a BIND nameserver to add secondary zones, remove them and change their configuration.
+
+Currently a lot of functionality is still missing!
+
+Work in progress!
+

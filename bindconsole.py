@@ -51,6 +51,9 @@ def main():
 
 	config = ConfigParser.RawConfigParser()
 
+	# Install Ctrl+C Handler
+	signal.signal(signal.SIGINT, handler)
+
 	mode="r+"
 	if args.readonly:
 		mode="r"
@@ -81,8 +84,6 @@ def main():
 
 
 
-	# Install Ctrl+C Handler
-	signal.signal(signal.SIGINT, handler)
 
 	d = Cmdloops.DNSShell()
 	# FIXME: give cmdlineargs to class/make them global/...

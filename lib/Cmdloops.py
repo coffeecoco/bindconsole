@@ -18,10 +18,10 @@
 #
 
 
+import ConfigParser
 import argparse
 import cmd
 from email.utils import parseaddr
-
 
 class DS_base(cmd.Cmd):
 	"""DNS-Shell base command loop Class"""
@@ -120,7 +120,7 @@ class DS_config(DS_base):
 class InitialConfig():
 
 	def __init__(self,config):
-		if (not config.type("ConfigParser")):
+		if not isinstance(config, ConfigParser.RawConfigParser):
 			raise TypeError("ConfigParser expected as argument.")
 		firstname = None
 		lastname = None

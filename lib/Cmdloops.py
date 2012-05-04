@@ -23,12 +23,14 @@ import argparse
 import cmd
 from email.utils import parseaddr
 
-class DS_base(cmd.Cmd):
+class DS_base(cmd.Cmd,object):
 	"""DNS-Shell base command loop Class"""
 
 	__version__ = '0.0.1'
 
 	def __init__(self):
+		#super(DS_base,self).__init__()
+		cmd.Cmd.__init__(self)
 		self.doc_header="Available commands (type ?<topic>):"
 		self.prompt="> "
 		self.intro=""
@@ -70,6 +72,7 @@ class DNSShell(DS_base):
 	"""DNS-Shell main command loop"""
 
 	def __init__(self):
+		super(DNSShell,self).__init__()
 		intro="Welcome to dnsshell %s" % DS_base.__version__
 
 	def do_exit(self, line):
@@ -94,6 +97,7 @@ class DS_enable(DS_base):
 	"""DNS-Shell main command loop"""
 
 	def __init__(self):
+		super(DS_enable,self).__init__()
 		intro="You are now in enable mode"
 		prompt="enable> "
 
@@ -106,6 +110,7 @@ class DS_enable(DS_base):
 class DS_config(DS_base):
 
 	def __init__(self):
+		super(DS_config,self).__init__()
 		intro="You may change your settings here. \nPlease use save to make changes permanent."
 		prompt="config> "
 		firstname=None

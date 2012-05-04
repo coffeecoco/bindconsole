@@ -73,7 +73,7 @@ class DNSShell(DS_base):
 
 	def __init__(self):
 		super(DNSShell,self).__init__()
-		intro="Welcome to dnsshell %s" % DS_base.__version__
+		self.intro="Welcome to dnsshell %s" % DS_base.__version__
 
 	def do_exit(self, line):
 		"exits the shell without saving."
@@ -98,8 +98,8 @@ class DS_enable(DS_base):
 
 	def __init__(self):
 		super(DS_enable,self).__init__()
-		intro="You are now in enable mode"
-		prompt="enable> "
+		self.intro="You are now in enable mode"
+		self.prompt="enable> "
 
 	def do_return(self, line):
 		"exits the shell without saving."
@@ -111,11 +111,11 @@ class DS_config(DS_base):
 
 	def __init__(self):
 		super(DS_config,self).__init__()
-		intro="You may change your settings here. \nPlease use save to make changes permanent."
-		prompt="config> "
-		firstname=None
-		lastname=None
-		email=None
+		self.intro="You may change your settings here. \nPlease use save to make changes permanent."
+		self.prompt="config> "
+		self.firstname=None
+		self.lastname=None
+		self.email=None
 
 	def setBaseConfig(self,initialconf):
 		if not isinstance(initialconf, InitialConfig):
@@ -129,9 +129,9 @@ class DS_config(DS_base):
 class InitialConfig():
 
 	def __init__(self):
-		firstname = None
-		lastname = None
-		email = None
+		self.firstname = None
+		self.lastname = None
+		self.email = None
 
 	def wizard(self):
 		print "Initial configuration dialog"

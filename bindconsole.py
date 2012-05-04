@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
-# dnsshell  - allows Zone-configuration of BIND by untrusted users
+# bindconsole  - allows Zone-configuration of BIND by untrusted users
 #
-# Download: https://github.com/mutax/DNS-Shell
+# Download: https://github.com/mutax/bindconsole
 #
 # Copyright (C) 2012 Florian Streibelt <florian@freitagsrunde.org>
 #

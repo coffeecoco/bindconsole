@@ -108,7 +108,9 @@ class DS_enable(DS_base):
 		"exits the shell without saving."
 		return True
 
-
+	def do_baseconfig(self,args):
+		c = DS_config()
+		c.cmdloop()
 
 class DS_config(DS_base):
 
@@ -119,6 +121,13 @@ class DS_config(DS_base):
 		self.firstname=None
 		self.lastname=None
 		self.email=None
+		c = Config()
+		if c.is_configured():
+			print "importing config:"
+			self.firstname=c.get('BaseConfig','firstname')
+			self.lastname=c.get('BaseConfig','lastname')
+			self.email=c.get('BaseConfig','email')
+
 
 	def setBaseConfig(self,initialconf):
 
@@ -192,6 +201,7 @@ class Config(object):
 	_readonly = False
 	_filename = None
 	_is_empty = True
+	_is_configured = False
 
 	def __init__(self):
 		if not Config._configparser:
@@ -204,23 +214,32 @@ class Config(object):
 
 	def add_section(self,section):
 		Config._configparser.add_section(section)
+		Config._is_configured = True
 
 	def set(self,section,key,value):
 		Config._configparser.set(section, key, value)
+		Config._is_configured = True
+
+	def get(self,section,key):
+		return Config._configparser.get(section, key)
 
 
 	def openRO(self,filename):
 		if not os.path.isfile(filename):
 			raise IOError(99,"File does not exist: "+filename)
 		Config._readonly=True
-		Config._configfile=open(filename,"rb")
+		Config._configparser.read(filename)
 		Config._filename=filename
+		Config._is_configured = True
+		print("openRO")
 
 	def openRW(self,filename):
 		if not os.path.isfile(filename):
 			raise IOError(99,"File does not exist: "+filename)
-		Config._configfile=open(filename,"r+b")
+		Config._configparser.read(filename)
 		Config._filename=filename
+		Config._is_configured = True
+		print("openRW")
 
 	def openCR(self,filename):
 		if os.path.isfile(filename):
@@ -239,7 +258,10 @@ class Config(object):
 
 		Config._configparser.write(self._configfile)
 		Config._is_empty = False
+		Config._is_configured = True
 
+	def is_configured(self):
+		return Config._is_configured
 
 
 

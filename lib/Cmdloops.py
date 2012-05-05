@@ -44,13 +44,29 @@ class DS_base(cmd.Cmd,object):
 
 	def do_help(self, args):
 		"""Get help on commands
-		'help' or '?' with no arguments prints a list of commands for which help is available
-		'help <command>' or '? <command>' gives help on <command>
 		"""
 		## The only reason to define this method is for the help text in the doc string
 		cmd.Cmd.do_help(self, args)
 
-	def do_hist(self, args):
+	def print_topics(self, header, cmds, cmdlen, maxcol):
+		if cmds:
+			self.stdout.write("%s\n"%str(header))
+			if self.ruler:
+				self.stdout.write("%s\n"%str(self.ruler * len(header)))
+
+				for nrows in range(0, len(cmds)):
+					try:
+						doc=str(getattr(self, 'do_' + cmds[nrows]).__doc__).strip().partition('\n')[0]
+						if not doc:
+							doc=""
+					except AttributeError:
+						pass
+
+					print "  %-15s - %s " % (cmds[nrows],doc)
+
+				self.stdout.write("\n")
+
+	def do_history(self, args):
 		"""Print a list of commands that have been entered"""
 		for line in self._hist:
 			print " "+line
@@ -81,6 +97,7 @@ class DNSShell(DS_base):
 	def __init__(self):
 		super(DNSShell,self).__init__()
 		self.intro="Welcome to dnsshell %s" % DS_base.__version__
+		self.intro+="\nEnter ? for help."
 
 	def do_exit(self, line):
 		"exits the shell without saving."
@@ -124,13 +141,13 @@ class DS_config(DS_base):
 		super(DS_config,self).__init__()
 		self.intro="You may change your settings here. \nPlease use save to make changes permanent,\nuse show to list settings."
 		self.prompt="config> "
+		self.doc_leader+="\nBasic Settings Menu\n\nConfiguration of your contact data.\n"
 		self.firstname=None
 		self.phone=None
 		self.lastname=None
 		self.email=None
 		c = Config()
 		if c.is_configured():
-			print "importing config:"
 			self.firstname=c.get('BaseConfig','firstname',required=False)
 			self.phone=c.get('BaseConfig','phone',required=False)
 			self.lastname=c.get('BaseConfig','lastname',required=False)

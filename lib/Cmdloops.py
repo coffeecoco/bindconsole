@@ -70,6 +70,10 @@ class DS_base(cmd.Cmd,object):
 			self._hist += [ line.strip() ]
 		return line
 
+	def completenames(self, text, *ignored):
+		dotext = 'do_'+text
+		return [(a[3:]+" ") for a in self.get_names() if a.startswith(dotext)]
+
 
 class DNSShell(DS_base):
 	"""DNS-Shell main command loop"""
@@ -90,6 +94,7 @@ class DNSShell(DS_base):
 	def do_ls(self, line):
 		"prints all configured domains"
 		print "Domains configured: "
+		#TODO: get them from conf and show 'em
 
 	def postloop(self):
 		print "Goodbye."

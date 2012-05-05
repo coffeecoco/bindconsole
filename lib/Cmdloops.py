@@ -110,8 +110,16 @@ class DNSShell(DS_base):
 
 	def do_ls(self, line):
 		"prints all configured domains"
-		print "Domains configured: "
 		#TODO: get them from conf and show 'em
+		domains = Config().getDomains()
+		if domains:
+			print "\nDomains configured: "
+			print "------------------"
+			for d in range(0, len(domains)):
+				print "  - %s " % domains[d]
+				print "\n"
+		else:
+			print "No domains configured."
 
 	def postloop(self):
 		print "Goodbye."
@@ -140,7 +148,7 @@ class DS_config(DS_base):
 	def __init__(self):
 		super(DS_config,self).__init__()
 		self.intro="You may change your settings here. \nPlease use save to make changes permanent,\nuse show to list settings."
-		self.prompt="config> "
+		self.prompt="baseconfig> "
 		self.doc_leader+="\nBasic Settings Menu\n\nConfiguration of your contact data.\n"
 		self.firstname=None
 		self.phone=None
@@ -180,6 +188,11 @@ class DS_config(DS_base):
 		"Exit immedeately without saving."
 		Config().unlink()
 		sys.exit(1)
+		return True
+
+	def do_return(self,args):
+		"Return without saving"
+		Config().unlink()
 		return True
 
 	def do_show(self,args):
@@ -269,6 +282,11 @@ class Config(object):
 		if not Config._configparser:
 			raise ValueError("Configuration not loaded.") # probably not the right one
 		return Config._configparser
+
+
+	def getDomains(self):
+		return [(d[7:]) for d in Config._configparser.sections() if d.startswith('domain_')]
+
 
 	def add_section(self,section):
 		Config._configparser.add_section(section)

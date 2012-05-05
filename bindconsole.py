@@ -49,40 +49,34 @@ def main():
 
 	configfile=args.configfile
 
-	config = ConfigParser.RawConfigParser()
-
 	# Install Ctrl+C Handler
 	signal.signal(signal.SIGINT, handler)
 
-	mode="r+"
-	if args.readonly:
-		mode="r"
 
 	try:
-		open(configfile, mode)
-		print "opened %s in mode %s" % (configfile, mode)
-	except IOError as (errno, strerror):
-		print "I/O error(%i) opening '%s': %s" %(errno, configfile, strerror)
-
-		if ((errno==2)&(not args.readonly)):
-			#Not found: Create a new, template config
+		if args.readonly:
+			Cmdloops.Config().openRO(configfile)
+		elif (args.createconf): 
+			Cmdloops.Config().openCR(configfile)
+			#Create a new, template config
 			print "about to create a config in %s\n" %configfile
-			#TODO: create config-template/ask user questions.
-			#      maybe special mode 'unconfigured>' ;o)
 			u = Cmdloops.InitialConfig()
 			u.wizard()
 			c = Cmdloops.DS_config()
 			c.setBaseConfig(u)
 			c.cmdloop()
-			pass
+		else:
+			Cmdloops.Config().openRW(configfile)
+
+	except IOError as (errno, strerror):
+		print "I/O error(%i) opening '%s': %s" %(errno, configfile, strerror)
+		sys.exit(1)
 
 		if ((errno==13)&(not args.readonly)):
 			#Permission denied:
 			print "Permission denied writing %s\n" %configfile
 
 		sys.exit(1)
-
-
 
 
 	d = Cmdloops.DNSShell()

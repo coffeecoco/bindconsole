@@ -22,6 +22,7 @@ import ConfigParser
 import argparse
 import cmd
 import re
+import os
 from email.utils import parseaddr
 
 class DS_base(cmd.Cmd,object):
@@ -126,6 +127,13 @@ class DS_config(DS_base):
 		self.lastname  = initialconf.lastname
 		self.email     = initialconf.email
 
+	def do_save(self,args):
+		Config().add_section('BaseConfig')
+		Config().set('BaseConfig', 'firstname', self.firstname)
+		Config().set('BaseConfig', 'lastname', self.lastname)
+		Config().set('BaseConfig', 'email', self.email)
+		Config().write()
+
 	def do_quit(self,args):
 		"Exit immideately without saving."
 		return True
@@ -172,6 +180,52 @@ class InitialConfig():
 
 	def _check_email(self,email_str):
 		return re.match("^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$", email_str)
+
+
+class Config(object):
+
+	_configparser = None
+	_configfile = None
+	_readonly = False
+
+	def __init__(self):
+		if not Config._configparser:
+			Config._configparser = ConfigParser.RawConfigParser()
+
+	def getRawConfigParser(self):
+		if not Config._configparser:
+			raise ValueError("Configuration not loaded.") # probably not the right one
+		return Config._configparser
+
+	def add_section(self,section):
+		Config._configparser.add_section(section)
+
+	def set(self,section,key,value):
+		Config._configparser.set(section, key, value)
+
+
+	def openRO(self,filename):
+		if not os.path.isfile(filename):
+			raise IOError(99,"File does not exist: "+filename)
+		Config._readonly=True
+		Config._configfile=open(filename,"rb")
+
+	def openRW(self,filename):
+		if not os.path.isfile(filename):
+			raise IOError(99,"File does not exist: "+filename)
+		Config._configfile=open(filename,"r+b")
+
+	def openCR(self,filename):
+		if os.path.isfile(filename):
+			raise IOError(99,"File already exists: "+filename)
+		Config._configfile=open(filename,"wb")
+
+
+	def write(self):
+		if not self._configfile:
+			raise ValueError("Configuration file not set.") # probably not the right one
+
+		Config._configparser.write(self._configfile)
 
 
 

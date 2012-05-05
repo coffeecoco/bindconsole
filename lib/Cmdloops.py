@@ -109,6 +109,7 @@ class DS_enable(DS_base):
 		return True
 
 	def do_baseconfig(self,args):
+		"set your name and contact info"
 		c = DS_config()
 		c.cmdloop()
 
@@ -119,14 +120,16 @@ class DS_config(DS_base):
 		self.intro="You may change your settings here. \nPlease use save to make changes permanent,\nuse show to list settings."
 		self.prompt="config> "
 		self.firstname=None
+		self.phone=None
 		self.lastname=None
 		self.email=None
 		c = Config()
 		if c.is_configured():
 			print "importing config:"
-			self.firstname=c.get('BaseConfig','firstname')
-			self.lastname=c.get('BaseConfig','lastname')
-			self.email=c.get('BaseConfig','email')
+			self.firstname=c.get('BaseConfig','firstname',required=False)
+			self.phone=c.get('BaseConfig','phone',required=False)
+			self.lastname=c.get('BaseConfig','lastname',required=False)
+			self.email=c.get('BaseConfig','email',required=False)
 
 
 	def setBaseConfig(self,initialconf):
@@ -134,15 +137,18 @@ class DS_config(DS_base):
 		if not isinstance(initialconf, InitialConfig):
 			raise TypeError("InitialConfig expected as argument, got "+str(initialconf.__class__))
 		self.firstname = initialconf.firstname
+		self.phone     = initialconf.phone
 		self.lastname  = initialconf.lastname
 		self.email     = initialconf.email
 
 	def do_save(self,args):
+		"saves the values to config"
 		try:
 			Config().add_section('BaseConfig')
 		except ConfigParser.DuplicateSectionError:
 			pass
 
+		Config().set('BaseConfig', 'phone', self.phone)
 		Config().set('BaseConfig', 'firstname', self.firstname)
 		Config().set('BaseConfig', 'lastname', self.lastname)
 		Config().set('BaseConfig', 'email', self.email)
@@ -162,12 +168,38 @@ class DS_config(DS_base):
 		print " Firstname..: %s " % self.firstname
 		print " Lastname...: %s " % self.lastname
 		print " Email......: %s " % self.email
+		print " Phone......: %s " % self.phone
 		print "."
+
+	def do_phone(self,args):
+		"set emergency phone."
+		self.phone=str(args).strip()
+		print "setting phone to '%s'" % self.phone
+
+	def do_firstname(self,args):
+		"set firstname."
+		self.firstname=str(args).strip()
+		print "setting firstname to '%s'" % self.firstname
+
+	def do_lastname(self,args):
+		"set lastname."
+		self.lastname=str(args).strip()
+		print "setting lastname to '%s'" % self.lastname
+
+	def do_email(self,args):
+		"set email."
+		line = str(args).strip()
+		if not re.match("^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$", line):
+			print "invalid email address: "+line
+			return
+		self.email=line
+		print "setting email to '%s'" % self.email
 
 
 class InitialConfig():
 
 	def __init__(self):
+		self.phone = None
 		self.firstname = None
 		self.lastname = None
 		self.email = None
@@ -179,6 +211,7 @@ class InitialConfig():
 		self.firstname = self._askStr("First Name.: ")
 		self.lastname  = self._askStr("Last Name..: ")
 		self.email     = self._askStr("Email......: ",tpe="email")
+		self.phone     = self._askStr("Phone......: ",tpe="phone")
 
 
 	def _askStr(self,question,tpe="any"):
@@ -223,8 +256,16 @@ class Config(object):
 		Config._configparser.set(section, key, value)
 		Config._is_configured = True
 
-	def get(self,section,key):
-		return Config._configparser.get(section, key)
+	def get(self,section,key,required=False):
+		retval=None
+		if (required):
+			retval=Config._configparser.get(section, key)
+		else:
+			try:
+				retval=Config._configparser.get(section, key)
+			except ConfigParser.NoOptionError:
+				pass
+		return retval
 
 
 	def openRO(self,filename):

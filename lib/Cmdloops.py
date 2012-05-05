@@ -138,7 +138,11 @@ class DS_config(DS_base):
 		self.email     = initialconf.email
 
 	def do_save(self,args):
-		Config().add_section('BaseConfig')
+		try:
+			Config().add_section('BaseConfig')
+		except ConfigParser.DuplicateSectionError:
+			pass
+
 		Config().set('BaseConfig', 'firstname', self.firstname)
 		Config().set('BaseConfig', 'lastname', self.lastname)
 		Config().set('BaseConfig', 'email', self.email)
@@ -197,7 +201,6 @@ class InitialConfig():
 class Config(object):
 
 	_configparser = None
-	_configfile = None
 	_readonly = False
 	_filename = None
 	_is_empty = True
@@ -231,7 +234,7 @@ class Config(object):
 		Config._configparser.read(filename)
 		Config._filename=filename
 		Config._is_configured = True
-		print("openRO")
+		Config._is_empty = False
 
 	def openRW(self,filename):
 		if not os.path.isfile(filename):
@@ -239,26 +242,33 @@ class Config(object):
 		Config._configparser.read(filename)
 		Config._filename=filename
 		Config._is_configured = True
-		print("openRW")
+		Config._is_empty = False
 
 	def openCR(self,filename):
 		if os.path.isfile(filename):
 			raise IOError(99,"File already exists: "+filename)
-		Config._configfile=open(filename,"wb")
 		Config._filename=filename
 
 	def unlink(self):
-		if not os.path.getsize(Config._filename) < 1:
-			raise IOError(99,"Refusing to delete non-empty configfile: "+filename)
+		if Config._readonly:
+			return
 		if Config._is_empty:
+			if not os.path.getsize(Config._filename) < 1:
+				raise IOError(99,"Refusing to delete non-empty configfile: "+Config._filename)
 			os.unlink(Config._filename)
 			Config._filename = None
 
 	def write(self):
-		if not self._configfile:
-			raise ValueError("Configuration file not set.") # probably not the right one
 
-		Config._configparser.write(self._configfile)
+		if not Config._filename:
+			raise ValueError("Configuration file not set.") # probably not the right one to raise
+
+		if Config._readonly:
+			print "Cannot write config, read only mode!"
+			return
+
+		configfile=open(Config._filename,"wb")
+		Config._configparser.write(configfile)
 		Config._is_empty = False
 		Config._is_configured = True
 

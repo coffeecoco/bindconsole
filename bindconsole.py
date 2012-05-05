@@ -59,7 +59,7 @@ def main():
 		elif (args.createconf): 
 			Cmdloops.Config().openCR(configfile)
 			#Create a new, template config
-			print "about to create a config in %s\n" %configfile
+			print "Writing empty config in '%s'\n" %configfile
 			u = Cmdloops.InitialConfig()
 			u.wizard()
 			c = Cmdloops.DS_config()
@@ -71,13 +71,6 @@ def main():
 	except IOError as (errno, strerror):
 		print "I/O error(%i) opening '%s': %s" %(errno, configfile, strerror)
 		sys.exit(1)
-
-		if ((errno==13)&(not args.readonly)):
-			#Permission denied:
-			print "Permission denied writing %s\n" %configfile
-
-		sys.exit(1)
-
 
 	d = Cmdloops.DNSShell()
 	d.cmdloop()

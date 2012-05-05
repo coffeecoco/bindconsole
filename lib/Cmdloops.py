@@ -23,6 +23,7 @@ import argparse
 import cmd
 import re
 import os
+import sys
 from email.utils import parseaddr
 
 class DS_base(cmd.Cmd,object):
@@ -135,7 +136,9 @@ class DS_config(DS_base):
 		Config().write()
 
 	def do_quit(self,args):
-		"Exit immideately without saving."
+		"Exit immedeately without saving."
+		Config().unlink()
+		sys.exit(1)
 		return True
 
 	def do_show(self,args):
@@ -187,6 +190,8 @@ class Config(object):
 	_configparser = None
 	_configfile = None
 	_readonly = False
+	_filename = None
+	_is_empty = True
 
 	def __init__(self):
 		if not Config._configparser:
@@ -209,23 +214,31 @@ class Config(object):
 			raise IOError(99,"File does not exist: "+filename)
 		Config._readonly=True
 		Config._configfile=open(filename,"rb")
+		Config._filename=filename
 
 	def openRW(self,filename):
 		if not os.path.isfile(filename):
 			raise IOError(99,"File does not exist: "+filename)
 		Config._configfile=open(filename,"r+b")
+		Config._filename=filename
 
 	def openCR(self,filename):
 		if os.path.isfile(filename):
 			raise IOError(99,"File already exists: "+filename)
 		Config._configfile=open(filename,"wb")
+		Config._filename=filename
 
+	def unlink(self):
+		if Config._is_empty:
+			os.unlink(Config._filename)
+			Config._filename = None
 
 	def write(self):
 		if not self._configfile:
 			raise ValueError("Configuration file not set.") # probably not the right one
 
 		Config._configparser.write(self._configfile)
+		Config._is_empty = False
 
 
 

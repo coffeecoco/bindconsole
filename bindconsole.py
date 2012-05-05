@@ -80,7 +80,6 @@ def main():
 
 
 	d = Cmdloops.DNSShell()
-	# FIXME: give cmdlineargs to class/make them global/...
 	d.cmdloop()
 
 

@@ -248,6 +248,8 @@ class Config(object):
 		Config._filename=filename
 
 	def unlink(self):
+		if not os.path.getsize(Config._filename) < 1:
+			raise IOError(99,"Refusing to delete non-empty configfile: "+filename)
 		if Config._is_empty:
 			os.unlink(Config._filename)
 			Config._filename = None

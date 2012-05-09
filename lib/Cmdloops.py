@@ -110,16 +110,8 @@ class DNSShell(DS_base):
 
 	def do_ls(self, line):
 		"prints all configured domains"
+		print "Domains configured: "
 		#TODO: get them from conf and show 'em
-		domains = Config().getDomains()
-		if domains:
-			print "\nDomains configured: "
-			print "------------------"
-			for d in range(0, len(domains)):
-				print "  - %s " % domains[d]
-				print "\n"
-		else:
-			print "No domains configured."
 
 	def postloop(self):
 		print "Goodbye."
@@ -148,7 +140,7 @@ class DS_config(DS_base):
 	def __init__(self):
 		super(DS_config,self).__init__()
 		self.intro="You may change your settings here. \nPlease use save to make changes permanent,\nuse show to list settings."
-		self.prompt="baseconfig> "
+		self.prompt="config> "
 		self.doc_leader+="\nBasic Settings Menu\n\nConfiguration of your contact data.\n"
 		self.firstname=None
 		self.phone=None
@@ -190,11 +182,6 @@ class DS_config(DS_base):
 		sys.exit(1)
 		return True
 
-	def do_return(self,args):
-		"Return without saving"
-		Config().unlink()
-		return True
-
 	def do_show(self,args):
 		"view settigs."
 
@@ -229,132 +216,3 @@ class DS_config(DS_base):
 			return
 		self.email=line
 		print "setting email to '%s'" % self.email
-
-
-class InitialConfig():
-
-	def __init__(self):
-		self.phone = None
-		self.firstname = None
-		self.lastname = None
-		self.email = None
-
-	def wizard(self):
-		print "Initial configuration dialog"
-		print "----------------------------"
-
-		self.firstname = self._askStr("First Name.: ")
-		self.lastname  = self._askStr("Last Name..: ")
-		self.email     = self._askStr("Email......: ",tpe="email")
-		self.phone     = self._askStr("Phone......: ",tpe="phone")
-
-
-	def _askStr(self,question,tpe="any"):
-		answer=None
-		while (not answer):
-			answer=raw_input(question)
-			if (not answer):
-				print("Value required")
-			elif (tpe=="email"):
-				if not self._check_email(answer):
-					print("Illegal Email address:" + answer)
-					answer=None
-		return answer
-
-
-	def _check_email(self,email_str):
-		return re.match("^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$", email_str)
-
-
-class Config(object):
-
-	_configparser = None
-	_readonly = False
-	_filename = None
-	_is_empty = True
-	_is_configured = False
-
-	def __init__(self):
-		if not Config._configparser:
-			Config._configparser = ConfigParser.RawConfigParser()
-
-	def getRawConfigParser(self):
-		if not Config._configparser:
-			raise ValueError("Configuration not loaded.") # probably not the right one
-		return Config._configparser
-
-
-	def getDomains(self):
-		return [(d[7:]) for d in Config._configparser.sections() if d.startswith('domain_')]
-
-
-	def add_section(self,section):
-		Config._configparser.add_section(section)
-		Config._is_configured = True
-
-	def set(self,section,key,value):
-		Config._configparser.set(section, key, value)
-		Config._is_configured = True
-
-	def get(self,section,key,required=False):
-		retval=None
-		if (required):
-			retval=Config._configparser.get(section, key)
-		else:
-			try:
-				retval=Config._configparser.get(section, key)
-			except ConfigParser.NoOptionError:
-				pass
-		return retval
-
-
-	def openRO(self,filename):
-		if not os.path.isfile(filename):
-			raise IOError(99,"File does not exist: "+filename)
-		Config._readonly=True
-		Config._configparser.read(filename)
-		Config._filename=filename
-		Config._is_configured = True
-		Config._is_empty = False
-
-	def openRW(self,filename):
-		if not os.path.isfile(filename):
-			raise IOError(99,"File does not exist: "+filename)
-		Config._configparser.read(filename)
-		Config._filename=filename
-		Config._is_configured = True
-		Config._is_empty = False
-
-	def openCR(self,filename):
-		if os.path.isfile(filename):
-			raise IOError(99,"File already exists: "+filename)
-		Config._filename=filename
-
-	def unlink(self):
-		if Config._readonly:
-			return
-		if Config._is_empty:
-			if not os.path.getsize(Config._filename) < 1:
-				raise IOError(99,"Refusing to delete non-empty configfile: "+Config._filename)
-			os.unlink(Config._filename)
-			Config._filename = None
-
-	def write(self):
-
-		if not Config._filename:
-			raise ValueError("Configuration file not set.") # probably not the right one to raise
-
-		if Config._readonly:
-			print "Cannot write config, read only mode!"
-			return
-
-		configfile=open(Config._filename,"wb")
-		Config._configparser.write(configfile)
-		Config._is_empty = False
-		Config._is_configured = True
-
-	def is_configured(self):
-		return Config._is_configured
-
-
-

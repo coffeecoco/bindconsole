@@ -28,6 +28,7 @@ import sys
 import ConfigParser
 
 from lib import Cmdloops
+from lib import Configuration
 
 def handler(signum, frame):
 	"""Just do nothing"""
@@ -55,18 +56,18 @@ def main():
 
 	try:
 		if args.readonly:
-			Cmdloops.Config().openRO(configfile)
+			Configuration.Config().openRO(configfile)
 		elif (args.createconf): 
-			Cmdloops.Config().openCR(configfile)
+			Configuration.Config().openCR(configfile)
 			#Create a new, template config
 			print "Writing empty config in '%s'\n" %configfile
-			u = Cmdloops.InitialConfig()
+			u = Configuration.InitialConfig()
 			u.wizard()
 			c = Cmdloops.DS_config()
 			c.setBaseConfig(u)
 			c.cmdloop()
 		else:
-			Cmdloops.Config().openRW(configfile)
+			Configuration.Config().openRW(configfile)
 
 	except IOError as (errno, strerror):
 		print "I/O error(%i) opening '%s': %s" %(errno, configfile, strerror)

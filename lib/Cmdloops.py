@@ -128,7 +128,7 @@ class DS_enable(DS_base):
 		self.prompt="enable> "
 
 	def do_return(self, line):
-		"exits the shell without saving."
+		"returns without saving."
 		return True
 
 	def do_baseconfig(self,args):
@@ -147,13 +147,21 @@ class DS_config(DS_base):
 		self.phone=None
 		self.lastname=None
 		self.email=None
+		self.dnsmasterV4 = None
+		self.dnsmasterV6 = None
+
 		c = Configuration.Config()
 		if c.is_configured():
 			self.firstname=c.get('BaseConfig','firstname',required=False)
 			self.phone=c.get('BaseConfig','phone',required=False)
 			self.lastname=c.get('BaseConfig','lastname',required=False)
 			self.email=c.get('BaseConfig','email',required=False)
+			self.dnsmasterV4=c.get('BaseConfig','default DNS IPv4',required=False)
+			self.dnsmasterV6=c.get('BaseConfig','default DNS IPv6',required=False)
 
+	def do_return(self, line):
+		"returns without saving."
+		return True
 
 	def do_save(self,args):
 		"saves the values to config"
@@ -162,11 +170,14 @@ class DS_config(DS_base):
 		Configuration.Config().set('BaseConfig', 'firstname', self.firstname)
 		Configuration.Config().set('BaseConfig', 'lastname', self.lastname)
 		Configuration.Config().set('BaseConfig', 'email', self.email)
+		Configuration.Config().set('BaseConfig', 'default DNS IPv4', self.dnsmasterV4)
+		Configuration.Config().set('BaseConfig', 'default DNS IPv6', self.dnsmasterV6)
 		Configuration.Config().write()
 
 	def do_quit(self,args):
-		"Exit immedeately without saving."
-		Configuration.Config().unlink()
+		"Exit immediately without saving."
+		# not needed here anymore. wizard already saves file.
+		# Configuration.Config().unlink()
 		sys.exit(1)
 		return True
 
@@ -175,10 +186,16 @@ class DS_config(DS_base):
 
 		print "Basic settings:"
 		print "---------------\n"
+		print "Contact:"
 		print " Firstname..: %s " % self.firstname
 		print " Lastname...: %s " % self.lastname
 		print " Email......: %s " % self.email
 		print " Phone......: %s " % self.phone
+		print "\n"
+		print "Default DNS Settings:"
+		print "---------------------"
+		print " Default IPv4 DNS Master: %s " % self.dnsmasterV4
+		print " Default IPv6 DNS Master: %s " % self.dnsmasterV6
 		print "."
 
 	def do_phone(self,args):
@@ -195,6 +212,19 @@ class DS_config(DS_base):
 		"set lastname."
 		self.lastname=str(args).strip()
 		print "setting lastname to '%s'" % self.lastname
+
+	def do_ipv4master(self,args):
+		"set default IPv4 DNS master."
+		self.dnsmasterV4=str(args).strip()
+		#FIXME: parse/check IPv4
+		print "setting default IPv4 DNS to '%s'" % self.dnsmasterV4
+
+	def do_ipv6master(self,args):
+		"set default IPv6 DNS master."
+		self.dnsmasterV6=str(args).strip()
+		#FIXME: parse/check IPv6
+		print "setting default IPv6 DNS to '%s'" % self.dnsmasterV6
+
 
 	def do_email(self,args):
 		"set email."

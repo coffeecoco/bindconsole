@@ -25,6 +25,9 @@ import re
 import os
 import sys
 from email.utils import parseaddr
+import socket
+import datetime
+
 
 
 class InitialConfig():
@@ -54,14 +57,15 @@ class InitialConfig():
 	def save(self):
 		print "saving settings..."
 
-		Config().add_or_create_section('BaseConfig')
-		Config().set('BaseConfig', 'firstname', self.firstname)
-		Config().set('BaseConfig', 'lastname', self.lastname)
-		Config().set('BaseConfig', 'phone', self.phone)
-		Config().set('BaseConfig', 'email', self.email)
-		Config().set('BaseConfig', 'default DNS IPv4', self.dnsmasterV4)
-		Config().set('BaseConfig', 'default DNS IPv6', self.dnsmasterV6)
-		Config().write()
+		c=Config()
+		c.add_or_create_section('BaseConfig')
+		c.set('BaseConfig', 'firstname', self.firstname)
+		c.set('BaseConfig', 'lastname', self.lastname)
+		c.set('BaseConfig', 'phone', self.phone)
+		c.set('BaseConfig', 'email', self.email)
+		c.set('BaseConfig', 'default DNS IPv4', self.dnsmasterV4)
+		c.set('BaseConfig', 'default DNS IPv6', self.dnsmasterV6)
+		c.write()
 
 		print "DONE."
 
@@ -77,11 +81,11 @@ class InitialConfig():
 					print("Illegal Email address:" + answer)
 					answer=None
 			elif (tpe=="ipv6"):
-				if not self._check_ipv6(answer):
+				if not self._is_valid_ipv6_address(answer):
 					print("Illegal IPv6 address:" + answer)
 					answer=None
 			elif (tpe=="ipv4"):
-				if not self._check_ipv4(answer):
+				if not self._is_valid_ipv4_address(answer):
 					print("Illegal IPv4 address:" + answer)
 					answer=None
 		return answer
@@ -90,27 +94,39 @@ class InitialConfig():
 	def _check_email(self,email_str):
 		return re.match("^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$", email_str)
 
-	#FIXME
-	def _check_ipv4(self,email_str):
+
+	def _is_valid_ipv4_address(self,address):
+		try:
+			addr= socket.inet_pton(socket.AF_INET, address)
+		except AttributeError: # no inet_pton here, sorry
+			try:
+				addr= socket.inet_aton(address)
+			except socket.error:
+				return False
+			return address.count('.') == 3
+		except socket.error: # not a valid address
+			return False
+
 		return True
 
-	#FIXME
-	def _check_ipv6(self,email_str):
+	def _is_valid_ipv6_address(self,address):
+		try:
+			addr= socket.inet_pton(socket.AF_INET6, address)
+		except socket.error: # not a valid address
+			return False
 		return True
+
 
 
 
 class Config(object):
 
-	_configparser = None
+	_configparser = ConfigParser.RawConfigParser()
 	_readonly = False
 	_filename = None
 	_is_empty = True
 	_is_configured = False
 
-	def __init__(self):
-		if not Config._configparser:
-			Config._configparser = ConfigParser.RawConfigParser()
 
 	def getRawConfigParser(self):
 		if not Config._configparser:
@@ -126,20 +142,20 @@ class Config(object):
 
 
 	def add_section(self,section):
-		Config._configparser.add_section(section)
+		self._configparser.add_section(section)
 		Config._is_configured = True
 
 	def set(self,section,key,value):
-		Config._configparser.set(section, key, value)
+		self._configparser.set(section, key, value)
 		Config._is_configured = True
 
 	def get(self,section,key,required=False):
 		retval=None
 		if (required):
-			retval=Config._configparser.get(section, key)
+			retval=self._configparser.get(section, key)
 		else:
 			try:
-				retval=Config._configparser.get(section, key)
+				retval=self._configparser.get(section, key)
 			except ConfigParser.NoOptionError:
 				pass
 		return retval
@@ -157,7 +173,7 @@ class Config(object):
 	def openRW(self,filename):
 		if not os.path.isfile(filename):
 			raise IOError(99,"File does not exist: "+filename)
-		Config._configparser.read(filename)
+		self._configparser.read(filename)
 		Config._filename=filename
 		Config._is_configured = True
 		Config._is_empty = False
@@ -171,7 +187,7 @@ class Config(object):
 		if Config._readonly:
 			return
 		if Config._is_empty:
-			if not os.path.getsize(Config._filename) < 1:
+			if not os.path.getsize(self._filename) < 1:
 				raise IOError(99,"Refusing to delete non-empty configfile: "+Config._filename)
 			os.unlink(Config._filename)
 			Config._filename = None
@@ -185,8 +201,11 @@ class Config(object):
 			print "Cannot write config, read only mode!"
 			return
 
-		configfile=open(Config._filename,"wb")
-		Config._configparser.write(configfile)
+		self.add_or_create_section('Metadata')
+		self.set('Metadata', 'config last written', str(datetime.datetime.today()) )
+
+		configfile=open(self._filename,"wb")
+		self._configparser.write(configfile)
 		Config._is_empty = False
 		Config._is_configured = True
 

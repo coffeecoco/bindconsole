@@ -32,6 +32,8 @@ class DS_base(cmd.Cmd,object):
 
 	__version__ = '0.0.1'
 
+	_hist = []      ## No history yet
+
 	def __init__(self):
 		super(DS_base,self).__init__()
 		cmd.Cmd.__init__(self)
@@ -69,7 +71,7 @@ class DS_base(cmd.Cmd,object):
 
 	def do_history(self, args):
 		"""Print a list of commands that have been entered"""
-		for line in self._hist:
+		for line in DS_base._hist:
 			print " "+line
 
 	def emptyline(self):
@@ -79,12 +81,12 @@ class DS_base(cmd.Cmd,object):
 	def preloop(self):
 		"""Initialize command history and call parent class func"""
 		cmd.Cmd.preloop(self)   ## sets up command completion
-		self._hist    = []      ## No history yet
+		#DS_base._hist    = []      ## No history yet
 
 	def precmd(self, line):
 		command = line.strip()
 		if line.strip():
-			self._hist += [ line.strip() ]
+			DS_base._hist += [ line.strip() ]
 		return line
 
 	def completenames(self, text, *ignored):

@@ -77,24 +77,27 @@ class InitialConfig():
 			if (not answer):
 				print("Value required")
 			elif (tpe=="email"):
-				if not self._is_valid_email_address(answer):
+				if not Validator.is_valid_email_address(answer):
 					print("Illegal Email address:" + answer)
 					answer=None
 			elif (tpe=="ipv6"):
-				if not self._is_valid_ipv6_address(answer):
+				if not Validator.is_valid_ipv6_address(answer):
 					print("Illegal IPv6 address:" + answer)
 					answer=None
 			elif (tpe=="ipv4"):
-				if not self._is_valid_ipv4_address(answer):
+				if not Validator.is_valid_ipv4_address(answer):
 					print("Illegal IPv4 address:" + answer)
 					answer=None
 		return answer
 
+class Validator(object):
 
-	def _is_valid_email_address(self,email_str):
+	@staticmethod
+	def is_valid_email_address(email_str):
 		return re.match("^[a-zA-Z0-9\._%-]+@[a-zA-Z0-9\._%-]+\.[a-zA-Z]{2,6}$", email_str)
 
-	def _is_valid_ipv4_address(self,address):
+	@staticmethod
+	def is_valid_ipv4_address(address):
 		try:
 			addr= socket.inet_pton(socket.AF_INET, address)
 		except AttributeError: # no inet_pton here, sorry
@@ -108,7 +111,8 @@ class InitialConfig():
 
 		return True
 
-	def _is_valid_ipv6_address(self,address):
+	@staticmethod
+	def is_valid_ipv6_address(address):
 		try:
 			addr= socket.inet_pton(socket.AF_INET6, address)
 		except socket.error: # not a valid address

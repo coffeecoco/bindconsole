@@ -215,22 +215,28 @@ class DS_config(DS_base):
 
 	def do_ipv4master(self,args):
 		"set default IPv4 DNS master."
-		self.dnsmasterV4=str(args).strip()
-		#FIXME: parse/check IPv4
+		arg = str(args).strip()
+		if not Configuration.Validator.is_valid_ipv4_address(arg):
+			print "Invalid IPv4 address: %s" % arg
+			return
+		self.dnsmasterV4=arg
 		print "setting default IPv4 DNS to '%s'" % self.dnsmasterV4
 
 	def do_ipv6master(self,args):
 		"set default IPv6 DNS master."
-		self.dnsmasterV6=str(args).strip()
-		#FIXME: parse/check IPv6
+		arg = str(args).strip()
+		if not Configuration.Validator.is_valid_ipv6_address(arg):
+			print "Invalid IPv6 address: %s" % arg
+			return
+		self.dnsmasterV6=arg
 		print "setting default IPv6 DNS to '%s'" % self.dnsmasterV6
 
 
 	def do_email(self,args):
 		"set email."
-		line = str(args).strip()
-		if not re.match("^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$", line):
-			print "invalid email address: "+line
+		arg = str(args).strip()
+		if not Configuration.Validator.is_valid_email_address(arg):
+			print "Invalid Email address: %s" % arg
 			return
-		self.email=line
+		self.email=arg
 		print "setting email to '%s'" % self.email

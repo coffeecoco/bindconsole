@@ -25,6 +25,7 @@ import re
 import os
 import sys
 from email.utils import parseaddr
+import Configuration
 
 class DS_base(cmd.Cmd,object):
 	"""DNS-Shell base command loop Class"""
@@ -146,7 +147,7 @@ class DS_config(DS_base):
 		self.phone=None
 		self.lastname=None
 		self.email=None
-		c = Config()
+		c = Configuration.Config()
 		if c.is_configured():
 			self.firstname=c.get('BaseConfig','firstname',required=False)
 			self.phone=c.get('BaseConfig','phone',required=False)
@@ -154,31 +155,18 @@ class DS_config(DS_base):
 			self.email=c.get('BaseConfig','email',required=False)
 
 
-	def setBaseConfig(self,initialconf):
-
-		if not isinstance(initialconf, InitialConfig):
-			raise TypeError("InitialConfig expected as argument, got "+str(initialconf.__class__))
-		self.firstname = initialconf.firstname
-		self.phone     = initialconf.phone
-		self.lastname  = initialconf.lastname
-		self.email     = initialconf.email
-
 	def do_save(self,args):
 		"saves the values to config"
-		try:
-			Config().add_section('BaseConfig')
-		except ConfigParser.DuplicateSectionError:
-			pass
-
-		Config().set('BaseConfig', 'phone', self.phone)
-		Config().set('BaseConfig', 'firstname', self.firstname)
-		Config().set('BaseConfig', 'lastname', self.lastname)
-		Config().set('BaseConfig', 'email', self.email)
-		Config().write()
+		Configuration.Config().add_or_create_section('BaseConfig')
+		Configuration.Config().set('BaseConfig', 'phone', self.phone)
+		Configuration.Config().set('BaseConfig', 'firstname', self.firstname)
+		Configuration.Config().set('BaseConfig', 'lastname', self.lastname)
+		Configuration.Config().set('BaseConfig', 'email', self.email)
+		Configuration.Config().write()
 
 	def do_quit(self,args):
 		"Exit immedeately without saving."
-		Config().unlink()
+		Configuration.Config().unlink()
 		sys.exit(1)
 		return True
 

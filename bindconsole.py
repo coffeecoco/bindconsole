@@ -63,9 +63,7 @@ def main():
 			print "Writing empty config in '%s'\n" %configfile
 			u = Configuration.InitialConfig()
 			u.wizard()
-			c = Cmdloops.DS_config()
-			c.setBaseConfig(u)
-			c.cmdloop()
+			u.save()
 		else:
 			Configuration.Config().openRW(configfile)
 

@@ -34,15 +34,36 @@ class InitialConfig():
 		self.firstname = None
 		self.lastname = None
 		self.email = None
+		self.dnsmasterV4 = None
+		self.dnsmasterV6 = None
 
 	def wizard(self):
 		print "Initial configuration dialog"
 		print "----------------------------"
-
+		print
+		print "Contact Information:"
 		self.firstname = self._askStr("First Name.: ")
 		self.lastname  = self._askStr("Last Name..: ")
 		self.email     = self._askStr("Email......: ",tpe="email")
 		self.phone     = self._askStr("Phone......: ",tpe="phone")
+		print
+		print "Default DNS-Settings: "
+		self.dnsmasterV4 = self._askStr("Master DNS IPv4: ",tpe="ipv4")
+		self.dnsmasterV6 = self._askStr("Master DNS IPv6: ",tpe="ipv6")
+
+	def save(self):
+		print "saving settings..."
+
+		Config().add_or_create_section('BaseConfig')
+		Config().set('BaseConfig', 'firstname', self.firstname)
+		Config().set('BaseConfig', 'lastname', self.lastname)
+		Config().set('BaseConfig', 'phone', self.phone)
+		Config().set('BaseConfig', 'email', self.email)
+		Config().set('BaseConfig', 'default DNS IPv4', self.dnsmasterV4)
+		Config().set('BaseConfig', 'default DNS IPv6', self.dnsmasterV6)
+		Config().write()
+
+		print "DONE."
 
 
 	def _askStr(self,question,tpe="any"):
@@ -55,11 +76,28 @@ class InitialConfig():
 				if not self._check_email(answer):
 					print("Illegal Email address:" + answer)
 					answer=None
+			elif (tpe=="ipv6"):
+				if not self._check_ipv6(answer):
+					print("Illegal IPv6 address:" + answer)
+					answer=None
+			elif (tpe=="ipv4"):
+				if not self._check_ipv4(answer):
+					print("Illegal IPv4 address:" + answer)
+					answer=None
 		return answer
 
 
 	def _check_email(self,email_str):
 		return re.match("^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$", email_str)
+
+	#FIXME
+	def _check_ipv4(self,email_str):
+		return True
+
+	#FIXME
+	def _check_ipv6(self,email_str):
+		return True
+
 
 
 class Config(object):
@@ -78,6 +116,14 @@ class Config(object):
 		if not Config._configparser:
 			raise ValueError("Configuration not loaded.") # probably not the right one
 		return Config._configparser
+
+	def add_or_create_section(self,section):
+
+		try:
+			self.add_section(section)
+		except ConfigParser.DuplicateSectionError:
+			pass
+
 
 	def add_section(self,section):
 		Config._configparser.add_section(section)

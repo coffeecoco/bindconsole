@@ -77,7 +77,7 @@ class InitialConfig():
 			if (not answer):
 				print("Value required")
 			elif (tpe=="email"):
-				if not self._check_email(answer):
+				if not self._is_valid_email_address(answer):
 					print("Illegal Email address:" + answer)
 					answer=None
 			elif (tpe=="ipv6"):
@@ -91,9 +91,8 @@ class InitialConfig():
 		return answer
 
 
-	def _check_email(self,email_str):
-		return re.match("^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$", email_str)
-
+	def _is_valid_email_address(self,email_str):
+		return re.match("^[a-zA-Z0-9\._%-]+@[a-zA-Z0-9\._%-]+\.[a-zA-Z]{2,6}$", email_str)
 
 	def _is_valid_ipv4_address(self,address):
 		try:
